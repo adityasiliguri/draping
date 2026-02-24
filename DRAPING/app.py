@@ -19,6 +19,7 @@ from flask import (
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.utils import secure_filename
 from sqlalchemy import or_
+from sqlalchemy.orm import aliased
 from sqlalchemy.exc import IntegrityError
 
 import pandas as pd
@@ -731,14 +732,48 @@ def job_add_dress(job_id):
 
     latest_values = {}
     if selected_dress_type:
+        selected_dress_name = selected_dress_type.name
         for param in params:
-            latest = CustomerMeasurement.query.filter_by(
-                customer_id=job.customer_id,
-                dress_type_id=selected_dress_type.id,
-                param_id=param.id,
-            ).order_by(CustomerMeasurement.created_at.desc()).first()
-            if latest:
-                latest_values[param.id] = latest
+            param_name = param.name
+
+            dt_old = aliased(DressType)
+            mp_old = aliased(MeasurementParam)
+            latest_job_row = (
+                db.session.query(JobMeasurement, Job.date_created)
+                .join(JobDress, JobMeasurement.job_dress_id == JobDress.id)
+                .join(Job, JobDress.job_id == Job.id)
+                .join(dt_old, JobDress.dress_type_id == dt_old.id)
+                .join(mp_old, JobMeasurement.param_id == mp_old.id)
+                .filter(
+                    Job.customer_id == job.customer_id,
+                    dt_old.name == selected_dress_name,
+                    mp_old.name == param_name,
+                )
+                .order_by(Job.date_created.desc(), JobMeasurement.id.desc())
+                .first()
+            )
+            latest_job = latest_job_row[0] if latest_job_row else None
+            latest_job_date = latest_job_row[1] if latest_job_row else None
+
+            dt_cust = aliased(DressType)
+            mp_cust = aliased(MeasurementParam)
+            latest_customer = (
+                db.session.query(CustomerMeasurement)
+                .join(dt_cust, CustomerMeasurement.dress_type_id == dt_cust.id)
+                .join(mp_cust, CustomerMeasurement.param_id == mp_cust.id)
+                .filter(
+                    CustomerMeasurement.customer_id == job.customer_id,
+                    dt_cust.name == selected_dress_name,
+                    mp_cust.name == param_name,
+                )
+                .order_by(CustomerMeasurement.created_at.desc(), CustomerMeasurement.id.desc())
+                .first()
+            )
+
+            if latest_customer and (not latest_job_date or latest_customer.created_at >= latest_job_date):
+                latest_values[param.id] = latest_customer
+            elif latest_job:
+                latest_values[param.id] = latest_job
 
     if request.method == 'POST' and selected_dress_type:
         order_details = request.form.get('order_details', '').strip()
@@ -770,6 +805,17 @@ def job_add_dress(job_id):
                     value_cm=value_cm,
                 )
                 db.session.add(jm)
+
+                # Keep a per-customer history as well (used for "Previous" hints)
+                db.session.add(
+                    CustomerMeasurement(
+                        customer_id=job.customer_id,
+                        dress_type_id=selected_dress_type.id,
+                        param_id=param.id,
+                        value_inch=value_inch,
+                        value_cm=value_cm,
+                    )
+                )
 
         # Optional: upload reference images / voice notes while taking measurements
         image_files = request.files.getlist('images')
@@ -890,7 +936,11 @@ def job_pdf(job_id):
 
     p.setFont('Helvetica', 10)
     cust = job.customer
-    p.drawString(40, y, f"Customer: {cust.first_name} {cust.last_name} ({cust.phone})")
+    p.drawString(40, y, f"Customer: {cust.first_name} {cust.last_name}")
+    y -= 15
+
+    created_text = job.date_created.strftime('%d-%m-%Y') if job.date_created else 'N/A'
+    p.drawString(40, y, f"Job Creation Date: {created_text}")
     y -= 15
     if cust.address:
         p.drawString(40, y, f"Address: {cust.address[:80]}")
@@ -1273,11 +1323,26 @@ def bulk_upload_measurement_params():
         flash('No file uploaded.', 'danger')
         return redirect(url_for('bulk_home'))
     df = pd.read_excel(file)
+
+    def _clean_cell(value) -> str:
+        if value is None:
+            return ''
+        try:
+            if pd.isna(value):
+                return ''
+        except Exception:
+            pass
+        text = str(value).strip()
+        return '' if text.lower() in {'nan', 'none'} else text
+
+    added = 0
+    skipped = 0
     for _, row in df.iterrows():
-        category_name = str(row.get('CategoryName', '')).strip()
-        dress_name = str(row.get('DressName', '')).strip()
-        param_name = str(row.get('ParamName', '')).strip()
+        category_name = _clean_cell(row.get('CategoryName', ''))
+        dress_name = _clean_cell(row.get('DressName', ''))
+        param_name = _clean_cell(row.get('ParamName', ''))
         if not (dress_name and param_name):
+            skipped += 1
             continue
 
         category = None
@@ -1288,20 +1353,29 @@ def bulk_upload_measurement_params():
                 db.session.add(category)
                 db.session.flush()
 
-        query = DressType.query.filter_by(name=dress_name)
-        if category:
-            query = query.filter_by(category_id=category.id)
-        dress_type = query.first()
+        # IMPORTANT:
+        # DressType.name is unique globally, so always match by name first.
+        # If category is provided, update the existing dress's category.
+        dress_type = DressType.query.filter_by(name=dress_name).first()
         if not dress_type:
             dress_type = DressType(name=dress_name, category_id=category.id if category else None)
             db.session.add(dress_type)
             db.session.flush()
+        elif category:
+            dress_type.category_id = category.id
 
         if MeasurementParam.query.filter_by(dress_type_id=dress_type.id, name=param_name).first():
+            skipped += 1
             continue
         db.session.add(MeasurementParam(dress_type_id=dress_type.id, name=param_name))
-    db.session.commit()
-    flash('Bulk measurement parameters uploaded.', 'success')
+        added += 1
+
+    try:
+        db.session.commit()
+        flash(f'Bulk measurement parameters uploaded. Added: {added}, Skipped: {skipped}.', 'success')
+    except IntegrityError:
+        db.session.rollback()
+        flash('Upload failed due to duplicate Dress Names or invalid data in Excel. Please check for repeated DressName with different spelling/casing and try again.', 'danger')
     return redirect(url_for('dress_types_list'))
 
 with app.app_context():

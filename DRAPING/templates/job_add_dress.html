@@ -35,7 +35,7 @@
             <div class="mb-2">
               <label class="form-label">{{ p.name }}</label>
               {% if latest %}
-              <div class="cm-hint">Last: {{ '%.2f'|format(latest.value_inch) }} in ({{ '%.2f'|format(latest.value_cm) }} cm)</div>
+              <div class="cm-hint">Previous: {{ '%.2f'|format(latest.value_inch) }} in ({{ '%.2f'|format(latest.value_cm) }} cm)</div>
               {% endif %}
               <input type="number" step="0.01" name="param_{{ p.id }}" class="form-control" oninput="updateCmHint(this)">
               <div class="cm-hint">This entry cm: <span>0.00</span></div>
