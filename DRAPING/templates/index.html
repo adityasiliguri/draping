@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1 class="mb-4">Draping Tailoring Measurement App</h1>
+<div class="row mb-4">
+  <div class="col-md-4">
+    <div class="card text-bg-light mb-3">
+      <div class="card-body">
+        <h5 class="card-title">Customers</h5>
+        <p class="card-text display-6">{{ customer_count }}</p>
+        <a href="{{ url_for('customers_list') }}" class="btn btn-primary btn-sm">Manage Customers</a>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card text-bg-light mb-3">
+      <div class="card-body">
+        <h5 class="card-title">Jobs</h5>
+        <p class="card-text display-6">{{ job_count }}</p>
+        <a href="{{ url_for('jobs_list') }}" class="btn btn-primary btn-sm">View Jobs</a>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="card">
+  <div class="card-body">
+    <h5 class="card-title">Quick Customer Search</h5>
+    <form class="row g-3" method="get" action="{{ url_for('customers_list') }}">
+      <div class="col-md-6">
+        <input type="text" class="form-control" name="q" placeholder="Search by name or phone">
+      </div>
+      <div class="col-md-3">
+        <button type="submit" class="btn btn-primary">Search</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

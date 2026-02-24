@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2>Dress Types (Dresses)</h2>
+  <a href="{{ url_for('dress_type_create') }}" class="btn btn-primary">Add Dress Type</a>
+</div>
+<table class="table table-striped table-sm">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Category</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for d in dress_types %}
+    <tr>
+      <td>{{ d.name }}</td>
+      <td>{% if d.category_id %}{{ categories[d.category_id].name }}{% endif %}</td>
+      <td class="text-end">
+        <a href="{{ url_for('measurement_params', dress_type_id=d.id) }}" class="btn btn-sm btn-outline-info">Params</a>
+        <a href="{{ url_for('dress_type_edit', dress_type_id=d.id) }}" class="btn btn-sm btn-outline-secondary">Edit</a>
+        <form method="post" action="{{ url_for('dress_type_delete', dress_type_id=d.id) }}" style="display:inline" onsubmit="return confirm('Delete this dress type?');">
+          <button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
+        </form>
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% if not dress_types %}
+<p>No dress types defined yet.</p>
+{% endif %}
+{% endblock %}

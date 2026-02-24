@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+{% block content %}
+{% set dress_measurements = dress_measurements|default({}) %}
+<div class="d-flex justify-content-between align-items-start mb-3">
+  <div>
+    <h2 class="mb-1">Job {{ job.job_number }}</h2>
+    <div class="text-muted">
+      {{ job.customer.first_name }} {{ job.customer.last_name }} ({{ job.customer.phone }}) ·
+      Created {{ job.date_created.strftime('%d-%m-%Y') }} ·
+      Delivery {% if job.date_delivery %}{{ job.date_delivery.strftime('%d-%m-%Y') }}{% else %}N/A{% endif %}
+    </div>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="{{ url_for('job_pdf', job_id=job.id) }}" class="btn btn-outline-primary btn-sm" target="_blank">PDF</a>
+    <a href="{{ url_for('job_add_dress', job_id=job.id) }}" class="btn btn-primary btn-sm">Add Dress &amp; Measurements</a>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-7">
+    <div class="card">
+      <div class="card-header theme-header">Dresses &amp; Measurements</div>
+      <div class="card-body">
+        {% if not dresses %}
+          <p class="mb-0">No dresses added yet.</p>
+        {% else %}
+          <div class="accordion" id="dressAccordion">
+            {% for d in dresses %}
+              <div class="accordion-item">
+                <h2 class="accordion-header" id="heading{{ d.id }}">
+                  <button class="accordion-button {% if not loop.first %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ d.id }}" aria-expanded="{% if loop.first %}true{% else %}false{% endif %}" aria-controls="collapse{{ d.id }}">
+                    {{ d.dress_type.name }}
+                    {% if d.date_delivery %}<span class="ms-2 text-muted">(Delivery {{ d.date_delivery.strftime('%d-%m-%Y') }})</span>{% endif %}
+                  </button>
+                </h2>
+                <div id="collapse{{ d.id }}" class="accordion-collapse collapse {% if loop.first %}show{% endif %}" aria-labelledby="heading{{ d.id }}" data-bs-parent="#dressAccordion">
+                  <div class="accordion-body">
+                    {% if d.order_details %}
+                      <div class="mb-3"><strong>Notes:</strong> {{ d.order_details }}</div>
+                    {% endif %}
+
+                    {% set rows = dress_measurements.get(d.id, []) %}
+                    {% if rows %}
+                      <div class="table-responsive">
+                        <table class="table table-sm table-bordered mb-0">
+                          <thead>
+                            <tr>
+                              <th>Measurement</th>
+                              <th class="text-center">Inches</th>
+                              <th class="text-center">Centimeters</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {% for r in rows %}
+                              <tr>
+                                <td>{{ r.name }}</td>
+                                <td class="text-center">{{ '%.2f'|format(r.inch) }}</td>
+                                <td class="text-center">{{ '%.2f'|format(r.cm) }}</td>
+                              </tr>
+                            {% endfor %}
+                          </tbody>
+                        </table>
+                      </div>
+                    {% else %}
+                      <p class="mb-0">No measurements saved for this dress yet.</p>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-5">
+    <div class="card mb-3">
+      <div class="card-header theme-header">Notes &amp; Attachments</div>
+      <div class="card-body">
+        <form method="post" action="{{ url_for('job_upload_files', job_id=job.id, next=request.full_path) }}" enctype="multipart/form-data" class="mb-2">
+          <div class="mb-2">
+            <label class="form-label">Upload Images</label>
+            <input type="file" name="images" multiple class="form-control" accept="image/*" capture="environment">
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Upload Voice Notes</label>
+            <input type="file" name="voices" multiple class="form-control" accept="audio/*" capture="microphone">
+          </div>
+          <button class="btn btn-primary btn-sm" type="submit">Upload</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="card mb-3">
+      <div class="card-header theme-header">Images</div>
+      <div class="card-body">
+        <div class="row">
+          {% for img in job.images %}
+          <div class="col-4 mb-2">
+            <img src="{{ url_for('uploaded_image', filename=img.filename) }}" class="img-fluid img-thumbnail" alt="image">
+          </div>
+          {% endfor %}
+        </div>
+        {% if not job.images %}<p class="mb-0">No images uploaded.</p>{% endif %}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header theme-header">Voice Notes</div>
+      <div class="card-body">
+        {% for v in job.voices %}
+          <audio controls class="w-100 mb-2">
+            <source src="{{ url_for('uploaded_voice', filename=v.filename) }}">
+          </audio>
+        {% endfor %}
+        {% if not job.voices %}<p class="mb-0">No voice notes uploaded.</p>{% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

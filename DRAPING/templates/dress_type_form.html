@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>{{ 'Edit Dress Type' if dress_type else 'Add Dress Type' }}</h2>
+<form method="post" class="mt-3">
+  <div class="mb-3">
+    <label class="form-label">Name</label>
+    <input type="text" name="name" class="form-control" value="{{ dress_type.name if dress_type else '' }}" required>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Category</label>
+    <select name="category_id" class="form-select">
+      <option value="">(None)</option>
+      {% for c in categories %}
+        <option value="{{ c.id }}" {% if dress_type and dress_type.category_id == c.id %}selected{% endif %}>{{ c.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <button class="btn btn-primary" type="submit">Save</button>
+  <a href="{{ url_for('dress_types_list') }}" class="btn btn-secondary">Cancel</a>
+</form>
+{% endblock %}

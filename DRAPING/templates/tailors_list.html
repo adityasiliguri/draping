@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2>Tailors / Karigars</h2>
+  <a href="{{ url_for('tailor_create') }}" class="btn btn-primary">Add Tailor</a>
+</div>
+<table class="table table-striped table-sm">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Phone</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for t in tailors %}
+    <tr>
+      <td>{{ t.name }}</td>
+      <td>{{ t.phone }}</td>
+      <td class="text-end">
+        <a href="{{ url_for('tailor_edit', tailor_id=t.id) }}" class="btn btn-sm btn-outline-secondary">Edit</a>
+        <form method="post" action="{{ url_for('tailor_delete', tailor_id=t.id) }}" style="display:inline" onsubmit="return confirm('Delete this tailor?');">
+          <button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
+        </form>
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% if not tailors %}
+<p>No tailors added yet.</p>
+{% endif %}
+{% endblock %}

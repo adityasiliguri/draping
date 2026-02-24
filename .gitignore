@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyd
+*.pyo
+*.pdb
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+
+# Secrets / env
+.env
+*.env
+
+# App data (do not commit)
+uploads/
+instance/
+*.db
+
+# Reports / exports
+*.xlsx
+*.pdf
+
+# Logs
+*.log

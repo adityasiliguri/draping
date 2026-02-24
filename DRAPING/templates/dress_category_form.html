@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>{{ 'Edit Category' if category else 'Add Category' }}</h2>
+<form method="post" class="mt-3">
+  <div class="mb-3">
+    <label class="form-label">Category Name</label>
+    <input type="text" name="name" class="form-control" value="{{ category.name if category else '' }}" required>
+  </div>
+  <button class="btn btn-primary" type="submit">Save</button>
+  <a href="{{ url_for('dress_categories_list') }}" class="btn btn-secondary">Cancel</a>
+</form>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>{{ 'Edit Customer' if customer else 'Add Customer' }}</h2>
+<form method="post" class="mt-3">
+  <div class="row mb-3">
+    <div class="col-md-4">
+      <label class="form-label">First Name</label>
+      <input type="text" name="first_name" class="form-control" value="{{ customer.first_name if customer else '' }}" required>
+    </div>
+    <div class="col-md-4">
+      <label class="form-label">Last Name</label>
+      <input type="text" name="last_name" class="form-control" value="{{ customer.last_name if customer else '' }}" required>
+    </div>
+    <div class="col-md-4">
+      <label class="form-label">Phone</label>
+      <input type="text" name="phone" class="form-control" value="{{ customer.phone if customer else '' }}" required>
+    </div>
+  </div>
+  <div class="row mb-3">
+    <div class="col-md-4">
+      <label class="form-label">Email</label>
+      <input type="email" name="email" class="form-control" value="{{ customer.email if customer else '' }}">
+    </div>
+    <div class="col-md-4">
+      <label class="form-label">Insta ID</label>
+      <input type="text" name="insta_id" class="form-control" value="{{ customer.insta_id if customer else '' }}">
+    </div>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Address</label>
+    <textarea name="address" class="form-control" rows="2">{{ customer.address if customer else '' }}</textarea>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Notes</label>
+    <textarea name="notes" class="form-control" rows="2">{{ customer.notes if customer else '' }}</textarea>
+  </div>
+  <button class="btn btn-primary" type="submit">Save</button>
+  <a href="{{ url_for('customers_list') }}" class="btn btn-secondary">Cancel</a>
+</form>
+{% endblock %}

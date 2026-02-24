@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2>Dress Categories</h2>
+  <a href="{{ url_for('dress_category_create') }}" class="btn btn-primary">Add Category</a>
+</div>
+<table class="table table-striped table-sm">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for c in categories %}
+    <tr>
+      <td>{{ c.name }}</td>
+      <td class="text-end">
+        <a href="{{ url_for('dress_category_edit', category_id=c.id) }}" class="btn btn-sm btn-outline-secondary">Edit</a>
+        <form method="post" action="{{ url_for('dress_category_delete', category_id=c.id) }}" style="display:inline" onsubmit="return confirm('Delete this category?');">
+          <button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
+        </form>
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% if not categories %}
+<p>No categories defined yet.</p>
+{% endif %}
+{% endblock %}

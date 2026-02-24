@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Customer: {{ customer.first_name }} {{ customer.last_name }}</h2>
+<p><strong>Phone:</strong> {{ customer.phone }}<br>
+<strong>Email:</strong> {{ customer.email }}<br>
+<strong>Insta:</strong> {{ customer.insta_id }}<br>
+<strong>Address:</strong> {{ customer.address }}</p>
+<p>
+  <a href="{{ url_for('customer_edit', customer_id=customer.id) }}" class="btn btn-sm btn-outline-primary">Edit</a>
+  <a href="{{ url_for('customer_measurements', customer_id=customer.id) }}" class="btn btn-sm btn-outline-success">Quick Measurements</a>
+  <a href="{{ url_for('index') }}" class="btn btn-sm btn-outline-secondary">Back to Dashboard</a>
+</p>
+<h4 class="mt-4">Job History</h4>
+<table class="table table-sm">
+  <thead>
+    <tr>
+      <th>Job Number</th>
+      <th>Created</th>
+      <th>Delivery</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for j in jobs %}
+    <tr>
+      <td>{{ j.job_number }}</td>
+      <td>{{ j.date_created.strftime('%d-%m-%Y') }}</td>
+      <td>{% if j.date_delivery %}{{ j.date_delivery.strftime('%d-%m-%Y') }}{% endif %}</td>
+      <td><a href="{{ url_for('job_detail', job_id=j.id) }}" class="btn btn-sm btn-outline-secondary">Open</a></td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% if not jobs %}
+<p>No jobs yet for this customer.</p>
+{% endif %}
+{% endblock %}

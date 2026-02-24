@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Bulk Upload &amp; Templates</h2>
+<div class="row">
+  <div class="col-md-4 mb-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <h5 class="card-title">Customers</h5>
+        <p>
+          <a class="btn btn-sm btn-outline-primary" href="{{ url_for('bulk_template_customers') }}">Download Template</a>
+        </p>
+        <form method="post" action="{{ url_for('bulk_upload_customers') }}" enctype="multipart/form-data">
+          <div class="mb-2">
+            <input type="file" name="file" class="form-control" accept=".xlsx" required>
+          </div>
+          <button class="btn btn-sm btn-primary" type="submit">Upload</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4 mb-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <h5 class="card-title">Dress Types</h5>
+        <p>
+          <a class="btn btn-sm btn-outline-primary" href="{{ url_for('bulk_template_dress_types') }}">Download Template</a>
+        </p>
+        <form method="post" action="{{ url_for('bulk_upload_dress_types') }}" enctype="multipart/form-data">
+          <div class="mb-2">
+            <input type="file" name="file" class="form-control" accept=".xlsx" required>
+          </div>
+          <button class="btn btn-sm btn-primary" type="submit">Upload</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4 mb-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <h5 class="card-title">Measurement Parameters</h5>
+        <p>
+          <a class="btn btn-sm btn-outline-primary" href="{{ url_for('bulk_template_measurement_params') }}">Download Template</a>
+        </p>
+        <form method="post" action="{{ url_for('bulk_upload_measurement_params') }}" enctype="multipart/form-data">
+          <div class="mb-2">
+            <input type="file" name="file" class="form-control" accept=".xlsx" required>
+          </div>
+          <button class="btn btn-sm btn-primary" type="submit">Upload</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Measurement Parameters for {{ dress_type.name }}</h2>
+<form method="post" class="row g-3 mb-3">
+  <div class="col-md-4">
+    <label class="form-label">Parameter Name (e.g. Length, Chest)</label>
+    <input type="text" name="name" class="form-control" required>
+  </div>
+  <div class="col-md-2 align-self-end">
+    <button class="btn btn-primary" type="submit">Add</button>
+  </div>
+</form>
+<table class="table table-striped table-sm">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for p in params %}
+    <tr>
+      <td>{{ p.name }}</td>
+      <td class="text-end">
+        <form method="post" action="{{ url_for('measurement_param_delete', param_id=p.id) }}" style="display:inline" onsubmit="return confirm('Delete this parameter?');">
+          <button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
+        </form>
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% if not params %}
+<p>No parameters yet. Add some above.</p>
+{% endif %}
+{% endblock %}
