@@ -1,12 +1,10 @@
 Flask
 Flask-SQLAlchemy
-Flask-WTF
-Flask-Uploads
-Flask-Migrate
-Flask-Babel
 python-dotenv
 reportlab
 openpyxl
 pandas
+
+# Production WSGI server
 gunicorn; platform_system != "Windows"
 waitress; platform_system == "Windows"
